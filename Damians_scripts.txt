@@ -1,0 +1,318 @@
+//Damian's Scripts
+
+
+//SD projection of all time points
+
+var count = 0;
+
+macro "standard deviation [s]"
+{
+run("Z Project...", "projection=[Standard Deviation] all");
+}
+
+
+//remove last frame
+
+macro "remove last slice [d]"
+{
+
+n = nSlices();
+if (nSlices != 1) {
+	setSlice(n);
+	run("Delete Slice", "delete=frame");
+}else {
+	print("Not a stack!);
+	
+}
+}
+
+
+macro "align two images [x]" {
+
+
+run("Set Measurements...", "centroid center stack redirect=None decimal=3");
+
+run("Set Scale...", "distance=0 global");                       
+setTool("point");                                       
+
+
+
+waitForUser("wait", "Select image1");
+myImageID_1 = getImageID();
+run("Canvas Size...", "width=" + 500 + " height=" + 500 + " position=Center zero");
+setSlice(nSlices);
+waitForUser("wait", "Select image1 position");
+rename("image1"); 
+run("Measure");
+
+x1 = getResult("X", nResults-1);                        
+y1 = getResult("Y", nResults-1);
+z1 = getResult("Slice", nResults-1);
+
+waitForUser("wait", "Select image2");
+myImageID_2 = getImageID(); 
+run("Canvas Size...", "width=" + 500 + " height=" + 500 + " position=Center zero");
+waitForUser("wait", "Select image2 position");
+rename("image2"); 
+run("Measure");
+  
+x2 = getResult("X", nResults-1);                        
+y2 = getResult("Y", nResults-1);
+z2 = getResult("Slice", nResults-1);
+
+xDelta = x1 - x2;
+yDelta = y1 - y2;
+
+
+
+print("xDelta is " + xDelta);
+print("yDelta is " + yDelta);
+print("z1 is " + z1);
+print("z2 is " + z2);
+print("number of slices is " + nSlices);
+
+//if the position is higher in stack 1 than stack 2, we need to padd stack 1
+if (z1 < z2) {
+	
+	//how many frames do we need to add
+	framesToAdd = z2 - z1;
+	print("zDelta is " + framesToAdd);
+	selectImage(myImageID_1);
+
+	Stack.getDimensions(width, height, channels, slices, frames);
+	newSlices = slices + framesToAdd;
+	
+	for (i = 0; i<framesToAdd; i++) {
+		selectImage(myImageID_1);
+		setSlice(1);
+		run("Add Slice", "add=slice prepend");
+		print("adding slice to image1 " + i);
+	}
+	
+	selectImage(myImageID_2);
+	
+	
+	//for some reason this isn't padding the end of the slices, but inserting them wherever the postion happens to be
+	for (i = 0; i<framesToAdd; i++) {
+		selectImage(myImageID_2);
+		//Stack.setDimensions(width, height, channels, newSlices, frames);
+		Stack.setPosition(channels, slices, frames) 
+		run("Add Slice", "add=slice");
+		print("adding slice to image2 " + i);
+		
+		//Stack.setPosition(channels, slices, frames);
+
+	}
+	
+	
+	
+	
+}
+
+
+selectImage(myImageID_1);
+height1 = getHeight();
+width1 = getWidth();
+
+selectImage(myImageID_2);
+height2 = getHeight();
+width2 = getWidth();
+
+newHeight = height1 + (2 * abs(yDelta));
+newWidth = width1 + (2 * abs(xDelta));
+
+
+print("old height was " + height1);
+print("old width was " + width1);
+print("new height is " + newHeight);
+print("new width is " + newWidth);
+
+selectImage(myImageID_1);
+run("Canvas Size...", "width=" + newWidth + " height=" + newHeight + " position=Center zero");
+
+selectImage(myImageID_2);
+
+run("Translate...", "x=" + xDelta + " y=" + yDelta + " interpolation=None stack");
+
+
+run("Concatenate...", "  image1=image1 image2=image2");
+
+//CropImagesToBlack();
+
+//selectImage(myImageID);  
+
+}	
+
+
+
+
+//Rotate and align to a level plane
+macro "align image to line [f]" {
+
+if (selectionType!=5)
+          exit("Straight line selection required");
+getLine(x1, y1, x2, y2, lineWidth);
+angle = getAngle(x1, y1, x2, y2);
+setBackgroundColor(0,0,0);			//TODO set it to match the average of the background
+amountToRotate = 360 - angle;
+amountToRotate = 0 - amountToRotate;
+run("Rotate... ", "angle=amountToRotate grid=1 interpolation=Bilinear fill");
+
+function getAngle(x1, y1, x2, y2) {
+      q1=0; q2orq3=2; q4=3; //quadrant
+      dx = x2-x1;
+      dy = y1-y2;
+      if (dx!=0)
+          angle = atan(dy/dx);
+      else {
+          if (dy>=0)
+              angle = PI/2;
+          else
+              angle = -PI/2;
+      }
+      angle = (180/PI)*angle;
+      if (dx>=0 && dy>=0)
+           quadrant = q1;
+      else if (dx<0)
+          quadrant = q2orq3;
+      else
+          quadrant = q4;
+      if (quadrant==q2orq3)
+          angle = angle+180.0;
+      else if (quadrant==q4)
+          angle = angle+360.0;
+      return angle;
+  }
+
+
+}
+
+
+macro "auto scale [q]" {
+run("Enhance Contrast", "saturated=0.35");
+}
+
+
+macro "CropImagesToBlack [z]" {
+	
+	CropImagesToBlack();
+	
+}
+
+
+macro "merge 2 color [j]" {
+	
+imageName = getTitle; 
+run("Split Channels");
+
+run("Merge Channels...", "c1=[C2-" + imageName + "] c2=[C1-" + imageName + "] create");
+	
+}
+
+
+
+
+macro "sync2Movies" {
+	
+waitForUser("wait", "Select image1 position");
+myImageID_1 = getImageID();
+
+
+waitForUser("wait", "Select image2 position");
+myImageID_2 = getImageID(); 
+
+
+	
+	
+selectImage(myImageID_1);  
+setSlice(1);
+doCommand("Start Animation [\\]");
+
+selectImage(myImageID_2);
+setSlice(1);  
+doCommand("Start Animation [\\]");
+	
+	
+	
+}
+
+
+
+
+function CropImagesToBlack() {
+	
+	run("Set Measurements...", "min centroid center redirect=None decimal=3");
+	
+	var minX = 0;
+	var minY = 0;
+	var maxX = 0;
+	var maxY = 0;
+	
+	rename("main_image"); 
+	run("Z Project...", "projection=[Max Intensity]");
+	rename("max"); 
+	selectWindow("max");
+run("Select None");
+	for (j = 0; j < getHeight(); j++) {	
+		
+		for (i = 0; i < getWidth(); i++) {
+		
+			if (getPixel(i, j) != 0) {
+				
+				print("getPixel = " + getPixel(i, j));
+				minX = i;
+				minY = j;
+				print("minX = " + minX);
+				print("minY = " + minY);
+				j = 999999;
+				i = 999999;
+			}
+	
+			
+		}		
+			
+			
+	}
+	selectWindow("max");
+run("Select None");
+
+	for (jj = getHeight(); jj > 0; jj--) {	
+	
+		//print("running line " + jj);
+	
+		for (ii = getWidth(); ii > 0 ; ii--) {
+		
+		//	print("running line " + ii);
+		
+			if (getPixel(ii, jj) != 0) {
+				
+				maxX = ii;
+				maxY = jj;
+				print("maxX = " + ii);
+				print("maxY = " + jj);
+				jj = 0;
+				ii = 0;
+			}
+	
+			
+		}		
+			
+			
+	}
+	
+	
+
+	print("making rectangle");
+	makeRectangle(minX, minY, maxX-minX, maxY-minY);
+	selectWindow("main_image");
+	run("Restore Selection");
+	run("Crop");
+	selectWindow("max");
+	run("Close");
+	
+	
+}
+
+
+//Go through a folder of images, convert to 8 bit and auto the levels
+
