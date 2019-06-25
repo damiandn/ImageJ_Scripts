@@ -1,0 +1,25 @@
+//This macro marks a position in a hyperstack, measures that position and then moves forward one setFrame
+
+macro "simple_track_hyperstack [g]" {
+
+run("Measure");
+Stack.getPosition(channel, slice, frame);
+Stack.setFrame(frame + 1);
+
+}
+
+macro "simple_track_hyperstack_with_draw [f]" {
+
+run("Measure");
+X = getResult("X");
+Y = getResult("Y");
+makeOval(X-1, Y-1, 2, 2);
+run("Draw", "slice");
+
+
+run("Select None");
+
+Stack.getPosition(channel, slice, frame);
+Stack.setFrame(frame + 1);
+
+}

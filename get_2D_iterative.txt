@@ -1,0 +1,95 @@
+//this macro iterates an ROI to get the countour of an object.
+//we typically use this to get the ROI defining a cell in the PLLp.
+
+
+macro "get 2D ROI iterative [g]"
+{
+
+
+
+	maxSliceNumber = nSlices;		//total number of slices in the stack
+
+
+	run("Measure");
+	X = getResult("X");
+	Y = getResult("Y");
+	getROI(X, Y);
+
+
+
+}
+
+	macro "mark and move [f]" {
+
+	setForegroundColor(255, 255, 255);
+
+	run("Measure");
+
+	print(getResult("X") + "," + getResult("Y"));
+	X = getResult("X");
+	Y = getResult("Y");
+	makeOval(X-1.5, Y-1.5, 3, 3);
+	run("Fill", "slice");
+	currentSlice = getSliceNumber();
+	setSlice(currentSlice + 35);
+
+
+	}
+
+
+
+
+
+function getROI(Xpos, Ypos) {
+
+		var running_ROI = true;
+
+		run("Set Scale...", "distance=0 known=0 pixel=1 unit=pixel global");
+		run("Set Measurements...", "area centroid bounding redirect=None decimal=3");
+
+		//Get the entire image area, break if the selection is the whole thing.
+		run("Select All");
+		run("Measure");
+		whole_image_area = getResult("Width") * getResult("Height");
+		run("Select None");
+
+		//get initial ROI size from seed position at low tolerance, get  bounding box values and area
+		tolerance = 10;
+		doWand(Xpos, Ypos, tolerance, "Legacy");
+		run("Measure");
+		boundingW = getResult("Width");
+		boundingH = getResult("Height");
+		boundingArea = boundingW * boundingH;
+
+		boundingArea2 = boundingArea;				//set an initial position for boundingArea2, which will pass the check
+
+		while (running_ROI == true) {
+
+			boundingArea = boundingArea2;
+
+			tolerance += 0.5;			//increment tolerance
+
+			doWand(Xpos, Ypos, tolerance, "Legacy");
+			run("Measure");
+			myArea = getResult("Area");
+			boundingW = getResult("Width");
+			boundingH = getResult("Height");
+			boundingArea2 = boundingW * boundingH;
+
+			//print("Bounding 1: " + boundingArea);
+			//print("Bounding 2: " + boundingArea2);
+			//print(boundingArea / boundingArea2);
+
+
+			if (boundingArea / boundingArea2 < 0.9 || myArea > 20000 || myArea == whole_image_area) {	//compare to see if the bounding box as grown to dramatically, or if it's the entire thing
+														//could add other checks in here if this is too coarse grained (added area)
+				running_ROI = false;
+				break;
+			}
+		}
+
+		tolerance -= 0.5;
+		doWand(Xpos, Ypos, tolerance, "Legacy");
+		//close("Results");
+
+	}
