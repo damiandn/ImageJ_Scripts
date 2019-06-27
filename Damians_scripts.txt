@@ -1,6 +1,9 @@
 //Damian's Scripts
 
 
+
+
+
 //SD projection of all time points
 
 var count = 0;
@@ -33,6 +36,8 @@ macro "align two images [x]" {
 //check image sizes, add enough to second one to make sure it will be big enough to handle the shift
 //then add same amount to first image to make images the same size for concatenation
 
+maxH = 0;
+maxW = 0;
 
 run("Set Measurements...", "centroid center stack redirect=None decimal=3");
 
@@ -43,7 +48,59 @@ setTool("point");
 
 waitForUser("wait", "Select image1");
 myImageID_1 = getImageID();
-run("Canvas Size...", "width=" + getWidth() + 250 + " height=" + getHeight() + 250 + " position=Center zero");
+w1 = getWidth();
+h1 = getHeight();
+z1 = nSlices();
+
+waitForUser("wait", "Select image2");
+myImageID_2 = getImageID();
+w2 = getWidth();
+h2 = getHeight();
+z2 = nSlices();
+
+//standardize the image sizes
+if (w1 > w2) {
+maxW = w1;
+} else {
+	maxW = w2;
+}
+
+if (h1 > h2) {
+	maxH = h1;
+}else {
+	maxH = h2;
+}
+
+if (z1 < z2) {
+
+	z_delta = z2-z1;
+	selectImage(myImageID_1);
+	for (k = 0; k < z_delta; k++) {
+		setSlice(1);
+		run("Add Slice", "add=slice prepend");
+	}
+}else if (z2 < z1) {
+	z_delta = z1-z2;
+	selectImage(myImageID_2);
+	for (k = 0; k < z_delta; k++) {
+		setSlice(1);
+		run("Add Slice", "add=slice prepend");
+	}
+
+
+}
+
+
+
+
+selectImage(myImageID_1);
+run("Canvas Size...", "width=" + maxW + " height=" + maxH + " position=Center zero");
+selectImage(myImageID_2);
+run("Canvas Size...", "width=" + maxW + " height=" + maxH + " position=Center zero");
+
+
+selectImage(myImageID_1);
+//run("Canvas Size...", "width=" + getWidth() + 250 + " height=" + getHeight() + 250 + " position=Center zero");
 setSlice(nSlices);
 waitForUser("wait", "Select image1 position");
 rename("image1");
@@ -53,9 +110,14 @@ x1 = getResult("X", nResults-1);
 y1 = getResult("Y", nResults-1);
 z1 = getResult("Slice", nResults-1);
 
-waitForUser("wait", "Select image2");
-myImageID_2 = getImageID();
-run("Canvas Size...", "width=" + getWidth() + 250 + " height=" + getHeight() + 250 + " position=Center zero");
+
+//x1 = 470;
+//y1 = 68;
+//z1 = 121;
+
+
+selectImage(myImageID_2);
+//run("Canvas Size...", "width=" + getWidth() + 250 + " height=" + getHeight() + 250 + " position=Center zero");
 waitForUser("wait", "Select image2 position");
 rename("image2");
 run("Measure");
@@ -63,6 +125,12 @@ run("Measure");
 x2 = getResult("X", nResults-1);
 y2 = getResult("Y", nResults-1);
 z2 = getResult("Slice", nResults-1);
+
+//x2 = 375;
+//y2 = 64;
+//z2 = 115
+
+
 
 xDelta = x1 - x2;
 yDelta = y1 - y2;
@@ -171,15 +239,12 @@ selectImage(myImageID_1);
 run("Canvas Size...", "width=" + newWidth + " height=" + newHeight + " position=Center zero");
 
 selectImage(myImageID_2);
+run("Canvas Size...", "width=" + newWidth + " height=" + newHeight + " position=Center zero");
 
 run("Translate...", "x=" + xDelta + " y=" + yDelta + " interpolation=None stack");
 
 
-run("Concatenate...", "  image1=image1 image2=image2");
-
-//CropImagesToBlack();
-
-//selectImage(myImageID);
+//run("Concatenate...", "  image1=image1 image2=image2");
 
 }
 
@@ -261,9 +326,15 @@ myImageID_1 = getImageID();
 waitForUser("wait", "Select image2 position");
 myImageID_2 = getImageID();
 
+<<<<<<< HEAD
 
 
 
+=======
+
+
+
+>>>>>>> e4de96384aad3680adef1915565a739c99d1ac0d
 selectImage(myImageID_1);
 setSlice(1);
 doCommand("Start Animation [\\]");
