@@ -29,6 +29,10 @@ if (nSlices != 1) {
 
 macro "align two images [x]" {
 
+//TODO: change image size increase to allow for abritrary image sizes
+//check image sizes, add enough to second one to make sure it will be big enough to handle the shift
+//then add same amount to first image to make images the same size for concatenation
+
 
 run("Set Measurements...", "centroid center stack redirect=None decimal=3");
 
@@ -39,7 +43,7 @@ setTool("point");
 
 waitForUser("wait", "Select image1");
 myImageID_1 = getImageID();
-run("Canvas Size...", "width=" + getWidth() + 250 + " height="  + getHeight() + 250 + " position=Center zero");
+run("Canvas Size...", "width=" + getWidth() + 250 + " height=" + getHeight() + 250 + " position=Center zero");
 setSlice(nSlices);
 waitForUser("wait", "Select image1 position");
 rename("image1");
@@ -71,9 +75,15 @@ print("z1 is " + z1);
 print("z2 is " + z2);
 print("number of slices is " + nSlices);
 
+
+
+
+
+
 //if the position is higher in stack 1 than stack 2, we need to padd stack 1
 if (z1 < z2) {
 
+	print("z1 is less than z2 (stack 1 is higher)");
 	//how many frames do we need to add
 	framesToAdd = z2 - z1;
 	print("zDelta is " + framesToAdd);
@@ -105,8 +115,37 @@ if (z1 < z2) {
 	}
 
 
+}else {
+		print("z2 is less than z1 (stack 2 is higher)");
+		framesToAdd = z1 - z2;
+		print("zDelta is " + framesToAdd);
+		selectImage(myImageID_2);
+
+		Stack.getDimensions(width, height, channels, slices, frames);
+		newSlices = slices + framesToAdd;
+
+		for (i = 0; i<framesToAdd; i++) {
+			selectImage(myImageID_2);
+			setSlice(1);
+			run("Add Slice", "add=slice prepend");
+			print("adding slice to image2 " + i);
+		}
+
+		selectImage(myImageID_1);
 
 
+		//for some reason this isn't padding the end of the slices, but inserting them wherever the postion happens to be
+		for (i = 0; i<framesToAdd; i++) {
+			selectImage(myImageID_1);
+			//Stack.setDimensions(width, height, channels, newSlices, frames);
+			Stack.setPosition(channels, slices, frames)
+			run("Add Slice", "add=slice");
+			print("adding slice to image1 " + i);
+
+			//Stack.setPosition(channels, slices, frames);
+
+
+}
 }
 
 
