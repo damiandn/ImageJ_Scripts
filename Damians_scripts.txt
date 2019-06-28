@@ -58,6 +58,7 @@ w2 = getWidth();
 h2 = getHeight();
 z2 = nSlices();
 
+
 //standardize the image sizes
 if (w1 > w2) {
 maxW = w1;
@@ -73,6 +74,7 @@ if (h1 > h2) {
 
 if (z1 < z2) {
 
+	maxZ = z2;
 	z_delta = z2-z1;
 	selectImage(myImageID_1);
 	for (k = 0; k < z_delta; k++) {
@@ -80,6 +82,7 @@ if (z1 < z2) {
 		run("Add Slice", "add=slice prepend");
 	}
 }else if (z2 < z1) {
+	maxZ = z1;
 	z_delta = z1-z2;
 	selectImage(myImageID_2);
 	for (k = 0; k < z_delta; k++) {

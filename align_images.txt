@@ -3,146 +3,224 @@ var cumulative_x;
 var cumulative_y;
 var cumulative_z;
 
-macro "shift image down [z]" {
-  slicenum = getSliceNumber()
 
-  run("Split Channels");
-  selectWindow("C1-Composite");
-  setSlice(1)
-  run("Add Slice");
-  selectWindow("C2-Composite");
-  setSlice(nSlices)
-  run("Add Slice");
-  run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-  cumulative_z -= 1;
-  print("total z displacement is " + cumulative_z);
-  setSlice(slicenum)
+macro "prep_images [q]" {
+
+run("Set Measurements...", "centroid center stack redirect=None decimal=3");
+run("Set Scale...", "distance=0 global");
+
+waitForUser("wait", "Select image1");
+myImageID_1 = getImageID();
+Stack.getDimensions(width, height, channels, slices, frames);
+w1 = width;
+h1 = height;
+z1 = slices;
+f1 = frames;
+
+waitForUser("wait", "Select image2");
+myImageID_2 = getImageID();
+Stack.getDimensions(width, height, channels, slices, frames);
+w2 = width;
+h2 = height;
+z2 = slices;
+f2 = frames;
+
+alignChannel = getNumber("enter channel number to align (default 1)", 1)
+
+print(w1 + " " + h1 + " " + z1)
+print(w2 + " " + h2 + " " + z2)
+
+
+//standardize the image sizes
+if (w1 > w2) {
+maxW = w1;
+} else {
+	maxW = w2;
+}
+
+if (h1 > h2) {
+	maxH = h1;
+}else {
+	maxH = h2;
+}
+
+if (z1 < z2) {
+  maxZ = z2;
+	z_delta = z2-z1;
+	selectImage(myImageID_1);
+	for (k = 0; k < z_delta; k++) {
+		 Stack.setPosition(1, 1, 1);
+		run("Add Slice", "add=slice prepend");
+	}
+}else if (z2 < z1) {
+  maxZ = z1;
+	z_delta = z1-z2;
+	selectImage(myImageID_2);
+	for (k = 0; k < z_delta; k++) {
+		Stack.setPosition(1, 1, 1);
+		run("Add Slice", "add=slice prepend");
+	}
+
+}else {
+    maxZ = slices;
+}
+
+
+
+selectImage(myImageID_1);
+run("Canvas Size...", "width=" + maxW + " height=" + maxH + " position=Center zero");
+run("Make Substack...", "channels=" + alignChannel + " slices=1-" + maxZ + " frames=" + frames);
+rename("C1");
+selectImage(myImageID_2);
+run("Canvas Size...", "width=" + maxW + " height=" + maxH + " position=Center zero");
+run("Make Substack...", "channels=" + alignChannel + " slices=1-" + maxZ + " frames=1");
+rename("C2");
+
+run("Merge Channels...", "c1=C1 c2=C2 create ignore");
+rename("Merged");
+
+
+//split out the last frame of image1 and the first frame of image2
+
+//rename these C1 and C2 respectively, and merge them
+
+//keep the other two image IDs in memory for the final Merge
+
+
+
 
 }
 
 
-macro "shift image up [x]" {
 
-  slicenum = getSliceNumber()
 
-  run("Split Channels");
-  selectWindow("C2-Composite");
-  setSlice(1)
-  run("Add Slice");
-  selectWindow("C1-Composite");
-  setSlice(nSlices)
-  run("Add Slice");
-  run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-  cumulative_z += 1;
-  print("total z displacement is " + cumulative_z);
-  setSlice(slicenum)
+macro "shift image down z [z]" {
+  shiftZ(1);
 }
 
-
+macro "shift image up z [x]" {
+  shiftZ(-1);
+}
 
 macro "shift image left [a]" {
-
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=-5 y=0 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_x -= 5;
-print("total x displacement is " + cumulative_x);
+  shiftX(-5);
 }
 
 macro "shift image right [d]" {
-
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=5 y=0 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_x += 5;
-print("total x displacement is " + cumulative_x);
+  shiftX(5);
 }
 
 macro "shift image up [w]" {
-
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=0 y=-5 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_y -= 5;
-print("total y displacement is " + cumulative_y);
+  shiftY(-5);
 }
-
 
 macro "shift image down [s]" {
-
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=0 y=5 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_y += 5;
-print("total y displacement is " + cumulative_y);
+  shiftY(5);
 }
 
-
 macro "shift image left [A]" {
-
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=-1 y=0 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_x -= 1;
-print("total x displacement is " + cumulative_x);
+  shiftX(-1);
 }
 
 macro "shift image right [D]" {
-
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=1 y=0 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_x += 1;
-print("total x displacement is " + cumulative_x);
+  shiftX(1);
 }
 
 macro "shift image up [W]" {
+  shiftY(-1);
+}
 
-slicenum = getSliceNumber()
-
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=0 y=-1 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_y -= 1;
-print("total y displacement is " + cumulative_y);
+macro "shift image down [S]" {
+  shiftY(1);
 }
 
 
-macro "shift image down [S]" {
 
-slicenum = getSliceNumber()
+function shiftY(distance) {
 
-run("Split Channels");
-selectWindow("C1-Composite");
-run("Translate...", "x=0 y=1 interpolation=None stack");
-run("Merge Channels...", "c1=C1-Composite c2=C2-Composite create ignore");
-setSlice(slicenum)
-cumulative_y += 1;
-print("total y displacement is " + cumulative_y);
+  slicenum = getSliceNumber()
+  myZoom = getZoom();
+  getLocationAndSize(xpos, ypos, width, height);
+
+  run("Split Channels");
+  selectWindow("C2-Merged");
+  run("Translate...", "x=0 y=" + distance +" interpolation=None stack");
+  run("Merge Channels...", "c1=C1-Merged c2=C2-Merged create ignore");
+  cumulative_y += distance;
+  print("total y displacement is " + cumulative_y);
+
+  setSlice(slicenum)
+  run("Set... ", "zoom=" + myZoom * 100);
+  setLocation(xpos,ypos,width,height);
+}
+
+
+
+function shiftX(distance) {
+
+
+  slicenum = getSliceNumber()
+  myZoom = getZoom();
+  getLocationAndSize(xpos, ypos, width, height);
+
+  run("Split Channels");
+  selectWindow("C2-Merged");
+  run("Translate...", "x=" + distance + " y=0 interpolation=None stack");
+  run("Merge Channels...", "c1=C1-Merged c2=C2-Merged create ignore");
+  cumulative_x += distance;
+  print("total x displacement is " + cumulative_x);
+
+  setSlice(slicenum)
+  run("Set... ", "zoom=" + myZoom * 100);
+  setLocation(xpos,ypos,width,height);
+}
+
+function shiftZ(distance) {
+
+
+  slicenum = getSliceNumber();
+  myZoom = getZoom();
+  getLocationAndSize(xpos, ypos, width, height);
+
+  run("Split Channels");
+
+  if (distance == 1) {
+  selectWindow("C1-Merged");
+  setSlice(1);
+  run("Add Slice");
+  selectWindow("C2-Merged");
+  setSlice(nSlices);
+  run("Add Slice");
+  cumulative_z += distance;
+  print("total z displacement is " + cumulative_z);
+
+}else if (distance == -1){
+
+  selectWindow("C2-Merged");
+  setSlice(1);
+  run("Add Slice");
+  selectWindow("C1-Merged");
+  setSlice(nSlices);
+  run("Add Slice");
+  cumulative_z += distance;
+  print("total z displacement is " + cumulative_z);
+
+}
+
+  run("Merge Channels...", "c1=C1-Merged c2=C2-Merged create ignore");
+
+  setSlice(slicenum);
+  run("Set... ", "zoom=" + myZoom * 100);
+  setLocation(xpos,ypos,width,height);
+}
+
+
+
+
+macro "print displacements [c]" {
+
+print("total x displacement is " + cumulative_x)
+print("total y displacement is " + cumulative_y)
+print("total z displacement is " + cumulative_z)
+
 }
