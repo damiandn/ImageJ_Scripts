@@ -1,0 +1,13 @@
+macro "Draw All ROIs" {
+
+nROIs = roiManager("count");
+print(nROIs);
+for (i = 0; i < nROIs; i++) {
+  roiManager("Select", i);
+  run("Fit Spline");    //optional, to smooth the ROI
+  run("Draw", "slice");
+  wait(10);
+}
+
+
+}
