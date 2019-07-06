@@ -19,12 +19,12 @@ run("Fill", "slice");
 
 Stack.getPosition(channel, slice, frame);
 
-setSlice(slice + 1);
-run("Draw", "slice");
-run("Fill", "slice");
-setSlice(slice - 1);
-run("Draw", "slice");
-run("Fill", "slice");
+// setSlice(slice + 1);
+// run("Draw", "slice");
+// run("Fill", "slice");
+// setSlice(slice - 1);
+// run("Draw", "slice");
+// run("Fill", "slice");
 
 run("Select None");
 Stack.setFrame(frame + 1);
