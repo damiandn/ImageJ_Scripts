@@ -1,0 +1,58 @@
+macro "track and reslice cross [g]" {
+
+
+myArray = newArray(270.833, 272, 278.333, 283.333, 284.333, 286.5, 289.167, 289.5, 292, 294.333, 296.5);
+
+
+
+
+//for (i = 0; i < myArray.length; i++) {
+
+
+
+
+for (i = 0; i < 1; i++) {
+
+
+
+
+Stack.setFrame(i + 1);
+
+selectWindow("base");
+
+run("Duplicate...", "duplicate frames=" + (i+1));
+rename("duplicated");
+wait(500);
+
+makeRectangle(myArray[0], 0, 3, 255);
+wait(500);
+
+
+run("Duplicate...", "duplicate");
+rename("cropped");
+wait(500);
+
+selectWindow("cropped");
+
+run("Reslice [/]...", "output=1.000 start=Right rotate");
+rename("rotated");
+wait(500);
+
+//run("Size...", "width=172 height=510 depth=3 average interpolation=Bilinear");
+
+
+selectWindow("cropped");
+run("Close");
+selectWindow("duplicated");
+run("Close");
+
+
+
+
+}
+
+
+
+
+
+}

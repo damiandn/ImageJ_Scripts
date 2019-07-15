@@ -19,14 +19,36 @@ run("Fill", "slice");
 
 Stack.getPosition(channel, slice, frame);
 
-setSlice(slice + 1);
-run("Draw", "slice");
-run("Fill", "slice");
-setSlice(slice - 1);
-run("Draw", "slice");
-run("Fill", "slice");
-
 run("Select None");
 Stack.setFrame(frame + 1);
+
+}
+
+
+
+macro "simple_track_hyperstack_with_draw 3D [h]" {
+
+  Stack.getPosition(channel, slice, frame);
+
+  run("Measure");
+  X = getResult("X");
+  Y = getResult("Y");
+  makeOval(X-1, Y-1, 2, 2);
+  run("Draw", "slice");
+  run("Fill", "slice");
+
+  Stack.setSlice(slice + 1);
+  makeOval(X-1, Y-1, 2, 2);
+  run("Draw", "slice");
+  run("Fill", "slice");
+  Stack.setSlice(slice - 1);
+  makeOval(X-1, Y-1, 2, 2);
+  run("Draw", "slice");
+  run("Fill", "slice");
+
+  Stack.setSlice(slice);
+
+  run("Select None");
+  Stack.setFrame(frame + 1);
 
 }
