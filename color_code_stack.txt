@@ -1,3 +1,5 @@
+//this macro takes a z-stack and depth codes it, but keeps the stack, each slice individual depth coded
+
 macro "make color coded z stack [g]" {
 
 
