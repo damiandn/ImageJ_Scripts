@@ -1,0 +1,143 @@
+
+macro "track and reslice cross [g]" {
+
+
+
+TrackAndReslice("nm2_x", "NUC");
+
+//TrackAndReslice("cell6_x", "NUC");
+//TrackAndReslice("cell6_x", "MEM");
+
+//TrackAndReslice("cell7_x", "NUC");
+//TrackAndReslice("cell7_x", "MEM");
+
+}
+
+
+function TrackAndReslice(csvFile, fileName) {
+	
+	
+	
+FileCCValuesPath = "G:/SPIM_July_2019/tracking/" + csvFile + ".csv"
+
+
+filestring=File.openAsString(FileCCValuesPath);
+print(filestring);
+rows=split(filestring, ",");
+
+
+
+for (i = 0; i < rows.length; i++) {
+
+
+
+call("java.lang.System.gc");
+
+print("running slice " + i + " of " + rows.length);
+Stack.setFrame(i + 1);
+
+selectWindow(fileName);
+
+run("Duplicate...", "duplicate frames=" + (i+1));
+rename("duplicated");
+//wait(200);
+
+
+
+makeRectangle(rows[i], 0, 10, 512);
+//wait(200);
+
+
+run("Duplicate...", "duplicate");
+rename("cropped");
+//wait(200);
+
+selectWindow("cropped");
+
+run("Reslice [/]...", "output=1.000 start=Right rotate");
+rename("rotated");
+wait(100);
+
+//run("Size...", "width=172 height=510 depth=3 average interpolation=Bilinear");
+
+
+selectWindow("cropped");
+run("Close");
+selectWindow("duplicated");
+run("Close");
+wait(100);
+
+if (i == 0) {
+
+selectWindow("rotated");
+rename("stack");
+
+}
+
+if (i > 0) {
+
+run("Concatenate...", "  title=stack open image1=stack image2=rotated image3=[-- None --]");
+
+
+}
+
+
+
+}
+
+selectWindow("stack");
+
+savePath = "G:/SPIM_July_2019/tracking/" + csvFile + "_" + fileName + ".tif";
+
+saveAs("Tiff", savePath);
+
+
+run("Close");
+
+
+
+}
+
+macro "align cross sections" {
+	//make substacks
+	print("renaming");
+	rename("base");
+	wait(2000);
+	run("Select All");
+	run("Make Substack...", "  slices=1-119");
+	rename("1");
+	selectWindow("base");
+	run("Make Substack...", "  slices=120-179");
+	rename("2");
+	selectWindow("base");
+	run("Make Substack...", "  slices=180-479");
+	rename("3");
+	selectWindow("base");
+	
+	
+	selectWindow("3");
+	run("Translate...", "x=-5 y=-41 interpolation=None stack");
+	
+	run("Concatenate...", "  title=23 open image1=2 image2=3 image3=[-- None --]");
+	
+	selectWindow("23");
+	run("Translate...", "x=52 y=-5 interpolation=None stack");
+	run("Concatenate...", "  title=123 open image1=1 image2=23 image3=[-- None --]");
+	
+	
+	
+	
+	
+	
+	
+	//59-60 x - 7 y - 3
+	
+	//119-120 x + 52 y - 5
+	
+	//179-180 x - 5 y - 41
+	
+	
+	
+	
+	
+}

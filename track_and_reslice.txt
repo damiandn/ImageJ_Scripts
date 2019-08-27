@@ -1,70 +1,130 @@
 macro "track and reslice cross [g]" {
 
 
-  // open the csv file in a Results table
-//FileCCValuesPath=File.openDialog("Select the file containing the coordinates");
-FileCCValuesPath = "C:/Users/dalledam/Desktop/cell1.csv"
-//open(FileCCValuesPath);
-filestring=File.openAsString(FileCCValuesPath);
+	// open the csv file in a Results table
+	//FileCCValuesPath=File.openDialog("Select the file containing the coordinates");
+	//FileCCValuesPath = "J:/Sheath cell paper data/SPIM July 2019/cell2_x.csv"
+	FileCCValuesPath = "G:/SPIM_July_2019/tracking/nm2_x.csv"
 
-//print(filestring);
-rows=split(filestring, "\n");
+	//open(FileCCValuesPath);
+	filestring=File.openAsString(FileCCValuesPath);
 
-//myArray = newArray(270.833, 272, 278.333, 283.333, 284.333, 286.5, 289.167, 289.5, 292, 294.333, 296.5);
+	rows=split(filestring, ",");
 
-
-for (i = 0; i < rows.length; i++) {
+	//myArray = newArray(270.833, 272, 278.333, 283.333, 284.333, 286.5, 289.167, 289.5, 292, 294.333, 296.5);
 
 
-Stack.setFrame(i + 1);
-
-selectWindow("base");
-
-run("Duplicate...", "duplicate frames=" + (i+1));
-rename("duplicated");
-//wait(200);
+	for (i = 0; i < rows.length; i++) {
 
 
+		call("java.lang.System.gc");
 
-makeRectangle(rows[i], 0, 3, 255);
-//wait(200);
+		print("running slice " + i + " of " + rows.length);
+		Stack.setFrame(i + 1);
+
+		selectWindow("base");
+
+		run("Duplicate...", "duplicate frames=" + (i+1));
+		rename("duplicated");
+		//wait(200);
+
+		makeRectangle(rows[i], 0, 4, 151);
+		//wait(200);
+
+		run("Duplicate...", "duplicate");
+		rename("cropped");
+		//wait(200);
+
+		selectWindow("cropped");
+
+		run("Reslice [/]...", "output=1.000 start=Right rotate");
+		rename("rotated");
+		//wait(200);
+
+		//run("Size...", "width=172 height=510 depth=3 average interpolation=Bilinear");
 
 
-run("Duplicate...", "duplicate");
-rename("cropped");
-//wait(200);
+		selectWindow("cropped");
+		run("Close");
+		selectWindow("duplicated");
+		run("Close");
 
-selectWindow("cropped");
+		if (i == 0) {
+			selectWindow("rotated");
+			rename("stack");
 
-run("Reslice [/]...", "output=1.000 start=Right rotate");
-rename("rotated");
-//wait(200);
+		}
+			if (i > 0) {
+			run("Concatenate...", "  title=stack open image1=stack image2=rotated image3=[-- None --]");
+		}
 
-//run("Size...", "width=172 height=510 depth=3 average interpolation=Bilinear");
+	}
+}
 
 
-selectWindow("cropped");
-run("Close");
-selectWindow("duplicated");
-run("Close");
 
-if (i == 0) {
 
-selectWindow("rotated");
-rename("stack");
+macro "mark cross section" {
+
+	y_cord_file =File.openAsString("G:/SPIM_July_2019/tracking/cell4_y.csv");
+	z_cord_file =File.openAsString("G:/SPIM_July_2019/tracking/cell4_z.csv");
+
+	y_array =split(y_cord_file, ",");
+	z_array =split(z_cord_file, ",");
+
+	for (i = 0; i < y_array.length; i++) {
+
+		Stack.setFrame(i + 1);
+		makeRectangle(z_array[i]-3, y_array[i]-3, 5, 5);
+		run("Fill", "slice");
+
+	}
+
+
 
 }
 
-if (i > 0) {
-
-run("Concatenate...", "  title=stack open image1=stack image2=rotated image3=[-- None --]");
-
-
-}
 
 
 
-}
+
+macro "align cross sections" {
+	//make substacks
+	print("renaming");
+	rename("base");
+	wait(2000);
+	run("Select All");
+	run("Make Substack...", "  slices=1-119");
+	rename("1");
+	selectWindow("base");
+	run("Make Substack...", "  slices=120-179");
+	rename("2");
+	selectWindow("base");
+	run("Make Substack...", "  slices=180-479");
+	rename("3");
+	selectWindow("base");
+
+
+	selectWindow("3");
+	run("Translate...", "x=-5 y=-41 interpolation=None stack");
+
+	run("Concatenate...", "  title=23 open image1=2 image2=3 image3=[-- None --]");
+
+	selectWindow("23");
+	run("Translate...", "x=52 y=-5 interpolation=None stack");
+	run("Concatenate...", "  title=123 open image1=1 image2=23 image3=[-- None --]");
+
+
+
+
+
+
+
+	//59-60 x - 7 y - 3
+
+	//119-120 x + 52 y - 5
+
+	//179-180 x - 5 y - 41
 
 
 

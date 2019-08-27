@@ -1,0 +1,101 @@
+//This macro marks a position in a hyperstack, measures that position and then moves forward one setFrame
+
+
+var last_x = 0;
+var last_y = 0;
+var last_z = 0
+
+macro "recover_last_point [f]" {
+
+Stack.getPosition(channel, slice, frame);
+
+ Stack.setSlice(last_z);
+ Stack.setFrame(frame-1);
+ makePoint(last_x, last_y, "small yellow hybrid");
+
+}
+
+
+
+macro "simple_track_hyperstack_virtual_stack [g]" {
+
+  Stack.getPosition(channel, slice, frame);
+
+
+  getCursorLoc(x, y, z, flags); 
+  makePoint(x, y, "small yellow hybrid");
+
+  last_x = x;
+  last_y = y;
+  last_z = slice;
+  
+  print(last_z);
+  
+  run("Measure");
+
+  run("Select None");
+  Stack.setFrame(frame + 1);
+
+  
+  if (frame == 59) {
+	  
+	  newx = last_x - 182;
+	  newy = last_y - 6;
+	  newz = last_z + 12;
+	  
+	  Stack.setSlice(newz);
+	  makePoint(newx, newy, "small yellow hybrid");
+  }
+  
+  if (frame == 119) {
+	  
+	  newx = last_x - 184;
+	  newy = last_y - 7;
+	  newz = last_z - 62;
+	  
+	  Stack.setSlice(newz);
+	  makePoint(newx, newy, "small yellow hybrid");
+	  
+	  
+  }
+  
+  
+    if (frame == 179) {
+	  
+	  newx = last_x - 242;
+	  newy = last_y + 44 ;
+	  newz = last_z + 8;
+	  
+	  Stack.setSlice(newz);
+	  makePoint(newx, newy, "small yellow hybrid");
+	  
+	  
+  }
+  
+   if (frame == 239) {
+	  
+	  newx = last_x - 187;
+	  newy = last_y - 1;
+	  newz = last_z + 9;
+	  
+	  Stack.setSlice(newz);
+	  makePoint(newx, newy, "small yellow hybrid");
+	  
+	  
+  }
+  
+   if (frame == 299) {
+	  
+	  newx = last_x - 120;
+	  newy = last_y - 0;
+	  newz = last_z + 7;
+	  
+	  Stack.setSlice(newz);
+	  makePoint(newx, newy, "small yellow hybrid");
+	  
+	  
+  }
+
+  
+  
+}

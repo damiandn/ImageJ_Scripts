@@ -33,16 +33,16 @@ macro "simple_track_hyperstack_with_draw 3D [h]" {
   run("Measure");
   X = getResult("X");
   Y = getResult("Y");
-  makeOval(X-1, Y-1, 2, 2);
+  makeOval(X-5, Y-5, 10, 10);
   run("Draw", "slice");
   run("Fill", "slice");
 
   Stack.setSlice(slice + 1);
-  makeOval(X-1, Y-1, 2, 2);
+  makeOval(X-5, Y-5, 10, 10);
   run("Draw", "slice");
   run("Fill", "slice");
   Stack.setSlice(slice - 1);
-  makeOval(X-1, Y-1, 2, 2);
+  makeOval(X-5, Y-5, 10, 10);
   run("Draw", "slice");
   run("Fill", "slice");
 

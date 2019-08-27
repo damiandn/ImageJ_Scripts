@@ -1,0 +1,13 @@
+macro "make color coded z stack [g]" {
+
+
+title = getTitle()
+
+getDimensions(width, height, channelCount, sliceCount, frameCount);
+
+print(sliceCount);
+
+newImage("ColorCodedStack", "RGB black", width, height, frameCount);
+
+
+}
