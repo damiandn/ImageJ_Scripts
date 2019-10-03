@@ -1,0 +1,161 @@
+
+macro "3D ROI to OBJ [g]" {
+
+_3DROItoOBJ("cell_50.zip");
+
+
+}
+
+
+
+function _3DROItoOBJ(roiFile) {
+
+
+//make sure the right measurements are selected and we're working in pixels
+run("Set Measurements...", "area mean center bounding stack redirect=None decimal=3");
+
+
+//open the ROI file specified
+roiManager("Open", "C:/test/" +  roiFile);
+
+//get the initial number of 2D nSlices
+countROIs = roiManager("count");
+
+//get the ratio of XY and Z to make sure the final object is scaled correctly
+XY_Z_ratio = getNumber("Enter the ratio of XY to Z scale", 1);
+
+//round the ratio down so that we can later interpolate the ROI for a first approximation. We'll add the rest of the scaling when we get to making the OBJ
+XY_Z_ratio_round = floor(XY_Z_ratio);
+
+round_to_full_ratio = XY_Z_ratio / XY_Z_ratio_round
+
+//setBatchMode(true);
+
+//we need to interpolate between the ROI slices so that the X-Y-Z scaling of the final output object is roughly correct.
+interpolateROIs(XY_Z_ratio_round);
+
+//at this point, we've got our ROI. Now we need to find the edges of the Roi
+
+getROIEdge();
+
+
+
+//setBatchMode(false);
+
+
+print("Macro Done!")
+
+}
+
+
+
+
+function getROIEdge() {
+newImage("Untitled", "8-bit black", 2660, 888, 515);
+f = File.open("C:/test/testOBJ.txt");
+
+setForegroundColor(255, 255, 255);
+//get the new number of countROIs
+countROIs = roiManager("count");
+
+for (k = 1; k < countROIs; k++) {
+
+
+  roiManager("Select", k);
+  //draw the ROIs
+  roiManager("Draw");
+
+
+
+  run("Measure");
+  run("Select None");
+  //loop through and get the coordinates of the pixels
+
+  //we don't want to look at every pixel, so lets limit ourselves to a bounding box
+  //we can also speed things up by ~4X by iterating at 2 pixels, which will effectively subsample the Roi
+  //WARNING: If you have straight lines along the x or y, this may cause them to be lost.
+  BX = getResult("BX");
+  BY = getResult("BY");
+  BW = getResult("Width");
+  BH = getResult("Height");
+
+  time = getTime();
+  print("starting pixel search at time = " + time);
+  for (i = (BX-3); i < (BX + BW + 3) ; i+=2) {
+    for (j = (BY-3); j < (BY + BH + 3); j+=2) {
+
+      if (getPixel(i, j) != 0) {
+
+        zposition_actual = getResult("Slice") * round_to_full_ratio;
+
+        //here we have to do the small adjustment to get the corrent place of the slice
+        print(f, "v " + i + " " + j + " " + zposition_actual);
+        //print(" pixel at " + i + " " + j + " " + zposition_actual);
+      }
+
+  }
+
+
+  }
+  print("Done ROI " + k + " of " + countROIs);
+  print("Processing one slice took " + (getTime() - time) + " msec");
+}
+  File.close(f)
+
+}
+
+
+function interpolateROIs(XY_Z_ratio_round) {
+
+
+//This function remaps the ROIs to (approximatley) their actual Z-position and interpolates between the countROIs
+//we do this in batch mode to speed up processing
+
+//TODO: get these from an original image (z will be original z * XY_Z_ratio_round)
+newImage("Untitled", "8-bit black", 2660, 888, 515);
+
+
+run("Set Scale...", "distance=0");
+
+countROIs = roiManager("count");
+
+//make some arrays to store the XYZ coordinates of the ROI centroid
+ZArray = newArray(countROIs);
+XArray = newArray(countROIs);
+YArray = newArray(countROIs);
+
+
+//for each ROI, redraw if in it's new place so it can be put back in the ROI manager
+for (i=0; i<countROIs; i++) {
+  roiManager("Select", i);
+  run("Measure");
+  Z = getResult("Slice");
+  setSlice(Z * 5);
+  ZArray[i] = (Z * 5);
+  XArray[i] = getResult("XM");
+  YArray[i] = getResult("YM");
+  run("Draw", "slice");
+}
+
+
+
+//delete all the original ROIs
+roiManager("Deselect");
+roiManager("Delete");
+
+//redraw and re-add the new ROIs to the ROI manager
+for (i = 0; i < countROIs; i++) {
+	run("Select None");
+	setSlice(ZArray[i]);
+	doWand(XArray[i], YArray[i]);
+	roiManager("Add");
+	}
+
+//interpolate between the new ROIs
+roiManager("Deselect");
+roiManager("Sort");
+roiManager("Interpolate ROIs");
+
+close();
+
+}
