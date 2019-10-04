@@ -36,7 +36,7 @@ interpolateROIs(XY_Z_ratio_round);
 
 //at this point, we've got our ROI. Now we need to find the edges of the Roi
 
-getROIEdge();
+//getROIEdge();
 
 
 
