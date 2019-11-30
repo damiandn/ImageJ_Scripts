@@ -1,0 +1,18 @@
+
+macro "apply range to stack [g]" {
+
+getDimensions(w, h, channels, slices, frames);
+Stack.getPosition(channel, slice, frame);
+
+low_end = getNumber("Set low end value", 0)
+
+high_end = getNumber("Set high end value", 255)
+
+for (i=1; i<=frames; i++) {
+  Stack.setPosition(channel, slice, i);
+  setMinAndMax(low_end, high_end);
+  run("Apply LUT");
+
+}
+
+}

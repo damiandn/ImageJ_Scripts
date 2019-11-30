@@ -239,15 +239,7 @@ myImageID_1 = getImageID();
 waitForUser("wait", "Select image2 position");
 myImageID_2 = getImageID();
 
-<<<<<<< HEAD
 
-
-
-=======
-
-
-
->>>>>>> e4de96384aad3680adef1915565a739c99d1ac0d
 selectImage(myImageID_1);
 setSlice(1);
 doCommand("Start Animation [\\]");

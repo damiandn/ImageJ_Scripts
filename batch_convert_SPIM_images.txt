@@ -3,31 +3,33 @@ macro "convert to 8 bit and downsample [g]" {
 //This macro takes a folder of images and sets the min max to some value (here 800 and 2000)
 //it then converts the images to 8 bit, and downsamples them from 2048 X 512 to 256 X 1024, saving both versions
 
-for (i = 0; i < 480; i++) {
+for (i = 1; i < 480; i++) {
 
-	file = "G:/SPIM May 2019/052119_Damian/H2A/DeconRot/DeconRot_" + i + ".tif";
+	file = "G:/SPIM_July_2019/LYN/DeconRot_" + i + ".tif";
 	open(file);
 	rename("base");
 
-	setMinAndMax(0, 800);
+	setMinAndMax(0, 300);
 	run("8-bit");
-	saveAs("Tiff", "G:/SPIM May 2019/052119_Damian/H2A/DeconRot/8bit/DeconRot_" + i + "_8bit.tif");
-	run("Size...", "width=256 height=1024 depth=308 constrain average interpolation=Bilinear");
-	saveAs("Tiff", "G:/SPIM May 2019/052119_Damian/H2A/DeconRot/8bit/small/DeconRot_" + i + "_8bit_1024.tif");
+	run("Rotate 90 Degrees Left");
+	saveAs("Tiff", "G:/SPIM_July_2019/LYN/8bit/DeconRot_" + i + "_8bit.tif");
+	run("Size...", "width=512 height=128 depth=256 constrain average interpolation=Bilinear");
+	saveAs("Tiff", "G:/SPIM_July_2019/LYN/8bit/small/DeconRot_" + i + "_8bit_1024.tif");
 	run("Close");
 }
 
 for (i = 1; i < 480; i++) {
 
-	file = "G:/SPIM May 2019/052119_Damian/lynGFP/DeconRot/DeconRot_" + i + ".tif";
+	file = "G:/SPIM_July_2019/H2A/DeconRot_" + i + ".tif";
 	open(file);
 	rename("base");
 
-	setMinAndMax(0, 2000);
+	setMinAndMax(0, 280);
 	run("8-bit");
-	saveAs("Tiff", "G:/SPIM May 2019/052119_Damian/lynGFP/DeconRot/8bit/DeconRot_" + i + "_8bit.tif");
-	run("Size...", "width=256 height=1024 depth=308 constrain average interpolation=Bilinear");
-	saveAs("Tiff", "G:/SPIM May 2019/052119_Damian/lynGFP/DeconRot/8bit/small/DeconRot_" + i + "_8bit_1024.tif");
+	run("Rotate 90 Degrees Left");
+	saveAs("Tiff", "G:/SPIM_July_2019/H2A/8bit/DeconRot_" + i + "_8bit.tif");
+	run("Size...", "width=512 height=128 depth=256 constrain average interpolation=Bilinear");
+	saveAs("Tiff", "G:/SPIM_July_2019/H2A/8bit/small/DeconRot_" + i + "_8bit_1024.tif");
 	run("Close");
 }
 

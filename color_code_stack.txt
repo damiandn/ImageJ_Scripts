@@ -1,0 +1,46 @@
+//this macro takes a z-stack and depth codes it, but keeps the stack, each slice individual depth coded
+
+macro "make color coded z stack [g]" {
+
+
+title = getTitle()
+
+getDimensions(width, height, channelCount, sliceCount, frameCount);
+
+print(sliceCount);
+
+newImage("ColorCodedStack", "RGB black", width, height, sliceCount);
+newImage("tempstack", "RGB black", width, height, sliceCount);
+
+
+for ( i = 1; i <= nSlices; i++) {
+
+  selectWindow(title);
+  setSlice(i);
+  run("Select All");
+  run("Copy");
+  selectWindow("tempstack");
+  setSlice(i);
+  run("Paste");
+
+  run("Temporal-Color Code", "lut=mpl-viridis start=1 end=16");
+
+  selectWindow("MAX_colored");
+
+
+  run("Select All");
+  run("Copy");
+  selectWindow("ColorCodedStack");
+  setSlice(i);
+  run("Paste");
+
+  selectWindow("MAX_colored");
+  run("Close");
+
+  selectWindow("tempstack");
+  setSlice(i);
+  run("Clear", "slice");
+
+}
+
+}
