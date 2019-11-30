@@ -15,7 +15,7 @@ if (totalFrames == 1) {
 defaultBreakPoint = round(totalFrames / 2);
 waitForUser("wait", "Make sure you have time stamped your image before proceeding");
 breakpoint = getNumber("Set the speed breakpoint frame (default = 50%)", defaultBreakPoint);
-slowAmount = getNumber("How much do you want to slow down the playback (default = 2X)", 2);
+slowAmount = getNumber("How much do you want to slow down the playback (default = 2X). Non-Integers will result in frame rate artifacts.", 2);
 
 run("Make Substack...", "delete slices=1-" + breakpoint);
 rename("part1");
