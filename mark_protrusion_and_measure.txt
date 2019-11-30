@@ -1,0 +1,7 @@
+macro "mark protrusion and measure [g]" {
+
+run("Measure");
+setForegroundColor(255, 0, 0);
+run("Draw", "slice");
+
+}

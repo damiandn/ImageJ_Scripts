@@ -1,0 +1,31 @@
+
+macro "slow down timeseries [g]" {
+
+
+rename("part2");
+
+totalFrames = nSlices;
+width = getWidth();
+height = getHeight();
+
+if (totalFrames == 1) {
+	exit("Image is not a stack!")
+}
+
+defaultBreakPoint = round(totalFrames / 2);
+waitForUser("wait", "Make sure you have time stamped your image before proceeding");
+breakpoint = getNumber("Set the speed breakpoint frame (default = 50%)", defaultBreakPoint);
+slowAmount = getNumber("How much do you want to slow down the playback (default = 2X)", 2);
+
+run("Make Substack...", "delete slices=1-" + breakpoint);
+rename("part1");
+selectWindow("part2");
+part2Frames = nSlices;
+newDepth = round(part2Frames * slowAmount);
+
+run("Scale...", "x=1.0 y=1.0 z=- width=" + width + " height=" + height + " depth=" + newDepth +" interpolation=None process create title=part2_slow");
+run("Concatenate...", "open image1=part1 image2=part2_slow image3=[-- None --]");
+selectWindow("part2");
+close();
+
+}
