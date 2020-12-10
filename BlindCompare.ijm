@@ -48,7 +48,7 @@ for (i=0; i<number_of_trials; i++) {
 	
 	setBatchMode(false);
 	
-	guess_number = getNumber("Enter the number of the treated embryo", 1);
+	guess_number = getNumber("Enter the number of the treated sample", 1);
 	if (guess_number == treated_answer) {
 		correct_guesses = correct_guesses + 1;
 		total_guesses = total_guesses + 1;
